@@ -1,14 +1,8 @@
 import uvicorn
 from fastapi import FastAPI
-from pydantic_settings import BaseSettings
 
+from app.config import FastAPIConfig
 from app.routers.health import router
-
-
-class FastAPIConfig(BaseSettings):
-    app_name: str = 'main:app'
-    reload: bool = True
-
 
 settings = FastAPIConfig()
 app = FastAPI()
