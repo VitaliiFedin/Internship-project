@@ -3,9 +3,10 @@ __________________________________________________________________
 
 ## How to start
 __________________________________________________________________
-To start application you could either run main.py file or use command in terminal
+
+To start application you need to create .env file with variables (examples in .env.sample).Then either run main.py file or use command in terminal
 ```bash
-uvicorn app.main:app --reload
+uvicorn app.main:app --reload --env-file .env
 ```
 ## Tests
 __________________________________________________________________

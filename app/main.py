@@ -1,14 +1,14 @@
 import os
-
 import uvicorn
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.config import FastAPIConfig
 from app.routers.health import router
 
 load_dotenv()
-
+settings = FastAPIConfig()
 app = FastAPI()
 
 
@@ -21,4 +21,4 @@ app.add_middleware(CORSMiddleware,
 app.include_router(router)
 
 if __name__ == '__main__':
-    uvicorn.run('main:app', reload=True)
+    uvicorn.run(settings.app_name, reload=settings.reload, host=settings.host, port=settings.port)
