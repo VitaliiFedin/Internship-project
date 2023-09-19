@@ -41,11 +41,11 @@ _HEADERS=['*'] -d --name mycontainer -p 80:80  myimage
 - --name the container's name
 
 ### Tests
-To run tests within docker we need to execute container in bash
+To run tests within docker we need to build image 
 ```bash
-docker exec -it my_container bash
+docker build  -f Dockerfile_test -t test .
 ```
 After that execute command
 ```bash
-pytest
+docker run -d -p 80:80 test
 ```
