@@ -28,13 +28,14 @@ services:
     ports:
       - '6379:6379'
     volumes:
-      - cache:/data
-  redis_insight:
-    image: redislabs/redisinsight:latest
-    container_name: redis_insight
-    restart: always
-    ports:
-      - 8001:8001
+      - redis:/data
+  tests:
+    build:
+      context: .
+      dockerfile: Dockerfile_test
+    command: pytest tests/test_main.py
+    env_file:
+      - app/.env
 
 volumes:
   postgres_data:
