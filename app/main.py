@@ -6,8 +6,6 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from config import FastAPIConfig
-from db.database import db_init_models as postgres_dependency
-from db.redis import redis_init as redis_dependency
 from routers.health import router
 
 load_dotenv()
@@ -26,7 +24,5 @@ app.include_router(router)
 
 
 if __name__ == '__main__':
-    postgres_dependency()
-    redis_dependency()
     uvicorn.run(settings.app_name, reload=settings.reload, host=settings.host, port=settings.port)
 

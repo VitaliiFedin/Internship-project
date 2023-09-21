@@ -1,11 +1,13 @@
-from fastapi import APIRouter
-
 import sys
 
-sys.path.append("..")
-from app.db.redis import redis_init
-from app.db.database import db_init_models
+sys.path.append('..')
+import os
+from fastapi import APIRouter
+from app.config import RedisConfig
+import redis.asyncio as redis
+import asyncpg
 
+settings = RedisConfig()
 router = APIRouter()
 
 
@@ -15,10 +17,15 @@ def health_check():
 
 
 @router.get('/redis')
-def redis_check():
-    return redis_init()
+async def redis_check():
+    connection = redis.Redis(host=settings.redis_host, port=settings.redis_port)
+    result = await connection.ping()
+    await connection.close()
+    return {'Redis': result}
 
 
 @router.get('/db')
-def db_check():
-    return db_init_models()
+async def db_check():
+    connection = await asyncpg.connect(os.getenv('DATABASE_URL'))
+    result = await connection.fetchval("SELECT 1")
+    return {'Postgresql': result}

@@ -1,4 +1,3 @@
-import asyncio
 import os
 
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
@@ -24,6 +23,4 @@ async def get_session() -> AsyncSession:
         yield session
 
 
-def db_init_models():
-    asyncio.run(init_models())
-    return {"PostgreSQL": 'Success'}
+
