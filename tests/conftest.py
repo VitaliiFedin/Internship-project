@@ -7,5 +7,5 @@ from app.main import app
 
 
 @pytest.fixture()
-def test_health() -> Generator[TestClient, None, None]:
+def client() -> Generator[TestClient, None, None]:
     yield TestClient(app)

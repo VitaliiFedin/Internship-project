@@ -3,7 +3,7 @@ version: '3.8'
 services:
   web:
     build: .
-    command: python app/main.py
+    command: python main.py
     volumes:
       - .:/code
     depends_on:
@@ -28,7 +28,7 @@ services:
     ports:
       - '6379:6379'
     volumes:
-      - redis:/data
+      - ./redis:/data
   tests:
     build:
       context: .

@@ -2,9 +2,7 @@ FROM python:3.11-slim
 
 WORKDIR /code
 
-COPY ./requirements.txt ./requirements.txt
-
-COPY ./requirements_dev.txt ./requirements_dev.txt
+COPY ./requirements_dev.txt ./requirements.txt ./
 
 RUN pip install --no-cache-dir --upgrade -r ./requirements_dev.txt
 

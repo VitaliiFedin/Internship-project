@@ -1,18 +1,23 @@
 import asyncio
-import os
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 import redis.asyncio as redis
-from dotenv import load_dotenv
 
-load_dotenv()
+
+class RedisConfig(BaseSettings):
+    model_config = SettingsConfigDict(env_file='.env', env_file_encoding='utf-8', extra='allow', frozen=False)
+    redis_host: str
+    redis_port: int
+
+
+settings = RedisConfig()
 
 
 async def redis_connection():
-    connection = redis.Redis(host=os.getenv('REDIS_HOST'), port=os.getenv('REDIS_PORT'))
-    print(f"Redis Ping successful: {await connection.ping()}")
+    connection = redis.Redis(host=settings.redis_host, port=settings.redis_port)
     await connection.close()
 
 
 def redis_init():
     asyncio.run(redis_connection())
-    print("PostgreSQL Done ")
+    print("Redis Done")

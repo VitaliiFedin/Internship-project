@@ -5,10 +5,10 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.config import FastAPIConfig
-from app.db.database import db_init_models as postgres_dependency
-from app.db.redis import redis_init as redis_dependency
-from app.routers.health import router
+from config import FastAPIConfig
+from db.database import db_init_models as postgres_dependency
+from db.redis import redis_init as redis_dependency
+from routers.health import router
 
 load_dotenv()
 
