@@ -26,4 +26,4 @@ async def get_session() -> AsyncSession:
 
 def db_init_models():
     asyncio.run(init_models())
-    print("PostgreSQL Done ")
+    return {"PostgreSQL": 'Success'}
