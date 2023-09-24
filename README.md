@@ -58,3 +58,14 @@ docker-compose up --build -d
 ```
 - --build to rebuild image
 - -d detach mode
+
+## Alembic
+__________________________________________________________________
+To create migration use 
+```bash
+docker-compose run web alembic revision --autogenerate -m "First migration"
+```
+To confirm migration use 
+```bash
+docker-compose exec web alembic upgrade head 
+```
