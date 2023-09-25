@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from config import FastAPIConfig
 from core.log_config import logging_config
 from routers.health import router
+from routers.user_routers import user
 
 load_dotenv()
 
@@ -21,6 +22,7 @@ app.add_middleware(CORSMiddleware,
                    allow_headers=os.getenv('ALLOW_HEADERS'),
                    )
 app.include_router(router)
+app.include_router(user)
 
 if __name__ == '__main__':
     uvicorn.run(settings.app_name, reload=settings.reload, host=settings.host, port=settings.port,

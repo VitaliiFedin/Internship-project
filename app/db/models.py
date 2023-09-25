@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ARRAY
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ARRAY, TIMESTAMP, text
 from sqlalchemy.ext.declarative import declarative_base
 
 Model = declarative_base()
@@ -9,16 +9,16 @@ Model = declarative_base()
 class User(Model):
     __tablename__ = "users"
 
-    id = Column(Integer, autoincrement=True, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True, nullable=False)
     firstname = Column(String)
     lastname = Column(String)
-    status = Column(Boolean, default=True)
+    status = Column(Boolean, server_default=text('TRUE'))
     city = Column(String)
     phone = Column(Integer, unique=True)
-    links = Column(ARRAY(String))
-    avatar = Column(String)
+    links = Column(ARRAY(String), server_default=text("'{mylink}'"))
+    avatar = Column(String, server_default=text("'myavatar'"))
     hashed_password = Column(String)
-    is_superuser = Column(Boolean, default=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow)
+    is_superuser = Column(Boolean, server_default=text('FALSE'))
+    created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
+    updated_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))

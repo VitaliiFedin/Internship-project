@@ -32,6 +32,9 @@ class UserSignupRequest(BaseModel):
     hashed_password: str
     phone: int
 
+    class Config:
+        orm_mode = True
+
 
 class UserUpdateRequest(BaseModel):
     firstname: str
