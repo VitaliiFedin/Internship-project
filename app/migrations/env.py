@@ -1,4 +1,4 @@
-import sys, os
+import sys
 
 sys.path.append('..')
 from logging.config import fileConfig
@@ -9,13 +9,9 @@ from sqlalchemy import pool
 from alembic import context
 from app.db.models import Model
 
-from dotenv import load_dotenv
 from app.config import FastAPIConfig
 setting = FastAPIConfig()
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-#load_dotenv(os.path.join(BASE_DIR, ".env"))
-sys.path.append(BASE_DIR)
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
