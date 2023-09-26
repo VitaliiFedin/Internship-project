@@ -13,13 +13,14 @@ services:
       - app/.env
     ports:
       - 80:80
+
   db:
     image: postgres
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     environment:
       - "POSTGRES_HOST_AUTH_METHOD=trust"
-      - "POSTGRES_DB=postgres"
+      - "POSTGRES_DB=mydb"
     ports:
       - "5432:5432"
   redis:

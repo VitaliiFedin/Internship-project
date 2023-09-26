@@ -26,6 +26,6 @@ async def redis_check():
 
 @router.get('/db')
 async def db_check():
-    connection = await asyncpg.connect(os.getenv('DATABASE_URL'))
+    connection = await asyncpg.connect(os.getenv('DATABASE_URL_FOR_TEST'))
     result = await connection.fetchval("SELECT 1")
     return {'Postgresql': result}
