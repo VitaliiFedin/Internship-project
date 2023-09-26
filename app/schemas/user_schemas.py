@@ -1,6 +1,7 @@
 from typing import List
 
 from pydantic import BaseModel
+from app.db import models
 
 
 class User(BaseModel):
@@ -47,6 +48,9 @@ class UserUpdateRequest(BaseModel):
 
 class UserListResponse(BaseModel):
     users: List[User]
+
+    class Config:
+        orm_mode =True
 
 
 class UserDetailResponse(BaseModel):
