@@ -1,11 +1,13 @@
 import sys
 
 sys.path.append('..')
-import os
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
+from app.config import FastAPIConfig
 
-SQLALCHEMY_DATABASE_URL = os.getenv('DATABASE_URL')
+settings = FastAPIConfig()
+
+SQLALCHEMY_DATABASE_URL = settings.database_url
 
 engine = create_async_engine(SQLALCHEMY_DATABASE_URL, echo=True)
 

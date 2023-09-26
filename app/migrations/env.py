@@ -10,14 +10,16 @@ from alembic import context
 from app.db.models import Model
 
 from dotenv import load_dotenv
+from app.config import FastAPIConfig
+setting = FastAPIConfig()
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-load_dotenv(os.path.join(BASE_DIR, ".env"))
+#load_dotenv(os.path.join(BASE_DIR, ".env"))
 sys.path.append(BASE_DIR)
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
-config.set_main_option("sqlalchemy.url", os.environ["DATABASE_URL_FOR_TEST"])
+config.set_main_option("sqlalchemy.url", setting.database_url_for_test)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.

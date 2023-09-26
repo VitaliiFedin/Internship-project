@@ -1,4 +1,5 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing import List
 
 
 class FastAPIConfig(BaseSettings):
@@ -7,6 +8,12 @@ class FastAPIConfig(BaseSettings):
     reload: bool
     host: str
     port: int
+    allow_origins: List[str]
+    allow_credentials: bool = True
+    allow_methods: List[str] = ['*']
+    allow_headers: List[str]
+    database_url_for_test: str
+    database_url: str
 
 
 class RedisConfig(BaseSettings):

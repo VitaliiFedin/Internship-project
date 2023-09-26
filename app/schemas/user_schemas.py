@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel
 
@@ -6,13 +6,13 @@ from pydantic import BaseModel
 class User(BaseModel):
     id: int
     email: str
-    firstname: str
-    lastname: str
-    status: str
-    city: str
-    phone: int
+    firstname: Optional[str]
+    lastname: Optional[str]
+    status: Optional[str]
+    city: Optional[str]
+    phone: Optional[int]
     links: List[str]
-    avatar: str
+    avatar: Optional[str]
     hashed_password: str
     is_superuser: bool = False
     created_at: str
@@ -26,20 +26,20 @@ class UserSigninRequest(BaseModel):
 
 class UserSignupRequest(BaseModel):
     email: str
-    firstname: str
-    lastname: str
-    city: str
+    firstname: Optional[str]
+    lastname: Optional[str]
+    city: Optional[str]
     hashed_password: str
-    phone: int
+    phone: Optional[int]
 
 
 class UserUpdateRequest(BaseModel):
-    firstname: str
-    lastname: str
-    city: str
-    phone: str
-    links: List[str]
-    avatar: str
+    firstname: Optional[str]
+    lastname: Optional[str]
+    city: Optional[str]
+    phone: Optional[str]
+    links: Optional[List[str]]
+    avatar: Optional[str]
 
 
 class UserListResponse(BaseModel):

@@ -15,10 +15,10 @@ settings = FastAPIConfig()
 app = FastAPI()
 
 app.add_middleware(CORSMiddleware,
-                   allow_origins=os.getenv('ORIGINS'),
-                   allow_credentials=os.getenv('ALLOW_CREDENTIALS'),
-                   allow_methods=os.getenv('ALLOW_METHODS'),
-                   allow_headers=os.getenv('ALLOW_HEADERS'),
+                   allow_origins=settings.allow_origins,
+                   allow_credentials=settings.allow_credentials,
+                   allow_methods=settings.allow_methods,
+                   allow_headers=settings.allow_headers,
                    )
 app.include_router(router)
 
