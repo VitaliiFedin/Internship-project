@@ -1,32 +1,38 @@
-from fastapi import APIRouter, Depends
-from app.schemas.user_schemas import *
-from sqlalchemy.orm import Session
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.db.database import get_session
+from fastapi import APIRouter
+from fastapi.params import Depends
+
+from app.repositories.users import UsersRepository
 from app.services.user_services import *
-from app.db import models
-from app.services.user_services import add_user, get_users
-from typing import List
+from fastapi_pagination import Page, Params, paginate
 
 user = APIRouter()
 
 
 @user.post('/users/add', response_model=UserSignupRequest)
-async def post_user(user_in: UserSignupRequest, session: AsyncSession = Depends(get_session)):
-    new_user = add_user(session=session, obj_in=user_in)
-    session.add(new_user)
-    await session.commit()
+async def post_user(user_in: UserSignupRequest):
+    new_user = await UsersRepository().create_new_user(obj_in=user_in)
     return new_user
 
 
-@user.get('/users')
-async def get_all_users(session: AsyncSession = Depends(get_session)):
-    all_users = await get_users(session)
-    return all_users
+@user.delete('/users/{user_id}/delete')
+async def delete_user(user_id: int):
+    user = await UsersRepository().delete_user(user_id)
+    return user
 
 
-@user.get('/users/{user_id}')
-async def get_user232(user_id: int, session: AsyncSession = Depends(get_session)):
-    _user = await session.execute(select(models.User).filter(models.User.id == user_id))
-    return _user.scalars().all()
+@user.get('/users', response_model=Page[User])
+async def get_all_users(params: Params = Depends()):
+    all_users = await UsersRepository().get_all_users()
+    return paginate(all_users, params)
 
+
+@user.get('/users/{user_id}/get', response_model=UserDetailResponse)
+async def user_get(user_id: int):
+    user = await UsersRepository().get_one_user(user_id)
+    return {'user': user}
+
+
+@user.patch('/users/{user_id}/update')
+async def user_update(user_id: int, obj: UserUpdateRequest):
+    user = await UsersRepository().update_user(user_id, obj)
+    return user

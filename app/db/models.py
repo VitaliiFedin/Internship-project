@@ -1,7 +1,6 @@
-from datetime import datetime
-
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ARRAY, TIMESTAMP, text
+from sqlalchemy import Column, Integer, String, Boolean, ARRAY, TIMESTAMP,text, BigInteger
 from sqlalchemy.ext.declarative import declarative_base
+
 
 Model = declarative_base()
 
@@ -15,10 +14,10 @@ class User(Model):
     lastname = Column(String)
     status = Column(Boolean, server_default=text('TRUE'))
     city = Column(String)
-    phone = Column(Integer, unique=True)
+    phone = Column(BigInteger, unique=True)
     links = Column(ARRAY(String), server_default=text("'{mylink}'"))
     avatar = Column(String, server_default=text("'myavatar'"))
-    hashed_password = Column(String)
+    hashed_password = Column(String, nullable=False)
     is_superuser = Column(Boolean, server_default=text('FALSE'))
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
     updated_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))

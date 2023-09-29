@@ -9,3 +9,6 @@ redis==5.0.0
 SQLAlchemy==1.4.49
 uvicorn==0.23.2
 passlib~=1.7.4
+fastapi-pagination==0.12.10
+
+

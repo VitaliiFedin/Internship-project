@@ -1,4 +1,4 @@
-import sys, os
+import sys
 
 sys.path.append('..')
 from logging.config import fileConfig
@@ -9,15 +9,14 @@ from sqlalchemy import pool
 from alembic import context
 from app.db.models import Model
 
-from dotenv import load_dotenv
+from app.config import FastAPIConfig
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-load_dotenv(os.path.join(BASE_DIR, ".env"))
-sys.path.append(BASE_DIR)
+setting = FastAPIConfig()
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
-config.set_main_option("sqlalchemy.url", os.environ["DATABASE_URL_FOR_TEST"])
+config.set_main_option("sqlalchemy.url", setting.database_url_for_test)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
@@ -29,6 +28,7 @@ if config.config_file_name is not None:
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 target_metadata = Model.metadata
+
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

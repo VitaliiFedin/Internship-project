@@ -1,24 +1,31 @@
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from app.core.security import get_password_hash
+
+from app.core.exception import email_already_exist, phone_already_exist, no_such_id
 from app.db import models
+from app.db.database import async_session
 from app.schemas.user_schemas import *
 
 
-def add_user(session: AsyncSession, obj_in: UserSignupRequest) -> User:
-    _user = models.User(
-        email=obj_in.email,
-        firstname=obj_in.firstname,
-        lastname=obj_in.lastname,
-        city=obj_in.city,
-        hashed_password=get_password_hash(obj_in.hashed_password),
-        phone=obj_in.phone
-    )
-    session.add(_user)
-    return _user
+async def check_email(obj_in: User):
+    async with async_session() as session:
+        email_check = await session.execute(select(models.User).where(models.User.email == obj_in.email))
+        email_check = email_check.scalar()
+        if email_check:
+            email_already_exist()
 
 
-async def get_users(session: AsyncSession):
-    result = await session.execute(select(models.User))
-    return result.scalars().all()
+async def check_phone(obj_in: User):
+    async with async_session() as session:
+        phone_check = await session.execute(select(models.User).where(models.User.phone == obj_in.phone))
+        phone_check = phone_check.scalar()
+        if phone_check:
+            phone_already_exist()
 
+
+async def get_user_id(user_id: int):
+    async with async_session() as session:
+        result = await session.execute(select(models.User).filter(models.User.id == user_id))
+        result = result.scalar()
+        if not result:
+            no_such_id()
+        return result
