@@ -1,8 +1,16 @@
+<<<<<<<< HEAD:app/migrations/versions/5ffa4c2aa8cd_first_migration.py
 """First migration
 
 Revision ID: 5ffa4c2aa8cd
 Revises: 
 Create Date: 2023-09-29 15:13:14.753093
+========
+"""Added User
+
+Revision ID: 027bee90d266
+Revises: 
+Create Date: 2023-09-26 09:58:55.123444
+>>>>>>>> c0cda7a801d5cce457f564051b93c41dd1fd516d:app/migrations/versions/027bee90d266_added_user.py
 
 """
 from typing import Sequence, Union
@@ -11,7 +19,11 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
+<<<<<<<< HEAD:app/migrations/versions/5ffa4c2aa8cd_first_migration.py
 revision: str = '5ffa4c2aa8cd'
+========
+revision: str = '027bee90d266'
+>>>>>>>> c0cda7a801d5cce457f564051b93c41dd1fd516d:app/migrations/versions/027bee90d266_added_user.py
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -26,7 +38,11 @@ def upgrade() -> None:
     sa.Column('lastname', sa.String(), nullable=True),
     sa.Column('status', sa.Boolean(), server_default=sa.text('TRUE'), nullable=True),
     sa.Column('city', sa.String(), nullable=True),
+<<<<<<<< HEAD:app/migrations/versions/5ffa4c2aa8cd_first_migration.py
     sa.Column('phone', sa.BigInteger(), nullable=True),
+========
+    sa.Column('phone', sa.Integer(), nullable=True),
+>>>>>>>> c0cda7a801d5cce457f564051b93c41dd1fd516d:app/migrations/versions/027bee90d266_added_user.py
     sa.Column('links', sa.ARRAY(sa.String()), server_default=sa.text("'{mylink}'"), nullable=True),
     sa.Column('avatar', sa.String(), server_default=sa.text("'myavatar'"), nullable=True),
     sa.Column('hashed_password', sa.String(), nullable=False),
