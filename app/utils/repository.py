@@ -1,13 +1,14 @@
 from abc import abstractmethod, ABC
 
+from fastapi import Depends
+from fastapi_pagination import Params, paginate
 from sqlalchemy import select
 
+from app.core.exception import no_such_id, email_already_exist, phone_already_exist
 from app.core.security import get_password_hash
 from app.db import models
 from app.db.database import async_session
-from app.schemas.user_schemas import UserSignupRequest, UserUpdateRequest
-from app.core.exception import no_such_id, email_already_exist, phone_already_exist
-from app.services.user_services import check_email, check_phone, get_user_id
+from app.schemas.user_schemas import UserSignupRequest, UserUpdateRequest, User
 
 
 class AbstractRepository(ABC):
@@ -31,25 +32,63 @@ class AbstractRepository(ABC):
     async def update_user(self):
         raise NotImplementedError
 
+    @abstractmethod
+    async def check_email(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    async def check_phone(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    async def get_user_id(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    async def get_all_users_paginated(self):
+        raise NotImplementedError
+
 
 class SQLAlchemyRepository(ABC):
     model = None
 
+    async def check_email(self, obj_in: User):
+        async with async_session() as session:
+            email_check = await session.execute(select(models.User).where(models.User.email == obj_in.email))
+            email_check = email_check.scalar()
+            if email_check:
+                email_already_exist()
+
+    async def check_phone(self, obj_in: User):
+        async with async_session() as session:
+            phone_check = await session.execute(select(models.User).where(models.User.phone == obj_in.phone))
+            phone_check = phone_check.scalar()
+            if phone_check:
+                phone_already_exist()
+
+    async def get_user_id(self, user_id: int):
+        async with async_session() as session:
+            result = await session.execute(select(models.User).filter(models.User.id == user_id))
+            result = result.scalar()
+            if not result:
+                no_such_id()
+            return result
+
     async def get_one_user(self, user_id: int):
         async with async_session() as session:
-
-            result = await get_user_id(user_id)
+            result = await self.get_user_id(user_id)
         return result
 
-    async def get_all_users(self):
+    async def get_all_users(self, params: Params = Depends()):
         async with async_session() as session:
             result = await session.execute(select(self.model))
-            return result.scalars().all()
+            result = result.scalars().all()
+            return paginate(result, params)
 
     async def create_new_user(self, obj_in: UserSignupRequest):
         async with async_session() as session:
-            await check_email(obj_in)
-            await check_phone(obj_in)
+            await self.check_email(obj_in)
+            await self.check_phone(obj_in)
             _user = self.model(
                 email=obj_in.email,
                 firstname=obj_in.firstname,
@@ -64,7 +103,7 @@ class SQLAlchemyRepository(ABC):
 
     async def delete_user(self, user_id: int):
         async with async_session() as session:
-            result = await get_user_id(user_id)
+            result = await self.get_user_id(user_id)
             user_to_show = result
             await session.delete(result)
             await session.commit()
@@ -74,7 +113,7 @@ class SQLAlchemyRepository(ABC):
         async with async_session() as session:
             result = await session.execute(select(self.model).filter(self.model.id == user_id))
             result = result.scalar()
-            await check_phone(obj_in)
+            await self.check_phone(obj_in)
             if not result:
                 no_such_id()
             for key, value in obj_in.model_dump(exclude_unset=True).items():
