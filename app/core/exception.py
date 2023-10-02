@@ -9,19 +9,25 @@ class MyNotFoundException(HTTPException):
         )
 
 
-def no_such_id():
-    raise MyNotFoundException(
-        detail="The user with this id does not exist in the system"
-    )
+class NoSuchId(HTTPException):
+    def __init__(self, detail="No such id exist in the system"):
+        super().__init__(
+            status_code=404,
+            detail=detail,
+        )
 
 
-def email_already_exist():
-    raise MyNotFoundException(
-        detail="This email already exist"
-    )
+class EmailExist(HTTPException):
+    def __init__(self, detail="This email already exist"):
+        super().__init__(
+            status_code=404,
+            detail=detail,
+        )
 
 
-def phone_already_exist():
-    raise MyNotFoundException(
-        detail="This phone already exist"
-    )
+class PhoneExist(HTTPException):
+    def __init__(self, detail="This phone already exist"):
+        super().__init__(
+            status_code=404,
+            detail=detail,
+        )

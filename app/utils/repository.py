@@ -4,11 +4,11 @@ from fastapi import Depends
 from fastapi_pagination import Params, paginate
 from sqlalchemy import select
 
-from app.core.exception import no_such_id, email_already_exist, phone_already_exist
 from app.core.security import get_password_hash
 from app.db import models
 from app.db.database import async_session
 from app.schemas.user_schemas import UserSignupRequest, UserUpdateRequest, User
+from app.core.exception import NoSuchId, EmailExist, PhoneExist
 
 
 class AbstractRepository(ABC):
@@ -57,21 +57,21 @@ class SQLAlchemyRepository(ABC):
             email_check = await session.execute(select(models.User).where(models.User.email == obj_in.email))
             email_check = email_check.scalar()
             if email_check:
-                email_already_exist()
+                raise EmailExist
 
     async def check_phone(self, obj_in: User):
         async with async_session() as session:
             phone_check = await session.execute(select(models.User).where(models.User.phone == obj_in.phone))
             phone_check = phone_check.scalar()
             if phone_check:
-                phone_already_exist()
+                raise PhoneExist
 
     async def get_user_id(self, user_id: int):
         async with async_session() as session:
             result = await session.execute(select(models.User).filter(models.User.id == user_id))
             result = result.scalar()
             if not result:
-                no_such_id()
+                raise NoSuchId
             return result
 
     async def get_one_user(self, user_id: int):
@@ -115,7 +115,7 @@ class SQLAlchemyRepository(ABC):
             result = result.scalar()
             await self.check_phone(obj_in)
             if not result:
-                no_such_id()
+                raise NoSuchId
             for key, value in obj_in.model_dump(exclude_unset=True).items():
                 setattr(result, key, value)
                 await session.commit()
