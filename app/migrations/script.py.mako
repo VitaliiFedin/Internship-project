@@ -6,7 +6,6 @@ Create Date: ${create_date}
 
 """
 from typing import Sequence, Union
-
 from alembic import op
 import sqlalchemy as sa
 ${imports if imports else ""}
@@ -24,3 +23,4 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     ${downgrades if downgrades else "pass"}
+

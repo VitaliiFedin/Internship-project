@@ -1,15 +1,11 @@
-import os
-
 import uvicorn
-from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from config import FastAPIConfig
 from core.log_config import logging_config
 from routers.health import router
-
-load_dotenv()
+from routers.user_routers import user
 
 settings = FastAPIConfig()
 app = FastAPI()
@@ -21,6 +17,7 @@ app.add_middleware(CORSMiddleware,
                    allow_headers=settings.allow_headers,
                    )
 app.include_router(router)
+app.include_router(user)
 
 if __name__ == '__main__':
     uvicorn.run(settings.app_name, reload=settings.reload, host=settings.host, port=settings.port,
