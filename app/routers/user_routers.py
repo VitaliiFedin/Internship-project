@@ -32,3 +32,4 @@ async def user_get(user_id: int):
 @user.patch('/users/{user_id}/update')
 async def user_update(user_id: int, obj: UserUpdateRequest):
     return await UsersRepository().update_user(user_id, obj)
+
