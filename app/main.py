@@ -7,6 +7,7 @@ from core.log_config import logging_config
 from routers.health import router
 from routers.user_routers import user
 from app.routers.jwt_routers import jwt
+from app.routers.auth0_routers import auth0
 settings = FastAPIConfig()
 app = FastAPI()
 
@@ -19,6 +20,7 @@ app.add_middleware(CORSMiddleware,
 app.include_router(router)
 app.include_router(user)
 app.include_router(jwt)
+app.include_router(auth0)
 
 if __name__ == '__main__':
     uvicorn.run(settings.app_name, reload=settings.reload, host=settings.host, port=settings.port,

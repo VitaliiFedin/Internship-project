@@ -28,3 +28,11 @@ class JWTConfig(BaseSettings):
     algorithm: str
     jwt_secret_key: str
     jwt_refresh_secret_key: str
+
+
+class Auth0Cofnig(BaseSettings):
+    model_config = SettingsConfigDict(env_file='.env', env_file_encoding='utf-8', extra='allow', frozen=False)
+    secret_key: str
+    auth0_algorithm: str
+    issuer: str
+    audience: str
