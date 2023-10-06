@@ -162,6 +162,9 @@ class AbstractRepositoryJWT(ABC):
 class JWTRepository(AbstractRepositoryJWT):
     model = None
 
+    def __init__(self, form_data= OAuth2PasswordRequestForm):
+        self.form_data = form_data
+
     async def get_current_user(self, token: str = Depends(reuseable_oauth)):
         try:
             payload = jwt.decode(
@@ -190,8 +193,11 @@ class JWTRepository(AbstractRepositoryJWT):
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail="Could not find user",
                 )
-            user_dict = db.__dict__
-            return SystemUser(**user_dict)
+            #user_dict = db.__dict__
+            #return SystemUser(**user_dict)
+            return db
+
+
 
     async def create_access_token(self, subject: Union[str, Any], expires_delta: int = None) -> str:
         if expires_delta is not None:
