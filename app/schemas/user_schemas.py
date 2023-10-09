@@ -1,6 +1,6 @@
 from typing import List, Optional
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class User(BaseModel):
@@ -48,3 +48,4 @@ class UserListResponse(BaseModel):
 
 class UserDetailResponse(BaseModel):
     user: User
+

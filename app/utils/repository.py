@@ -1,14 +1,29 @@
 from abc import abstractmethod, ABC
+from datetime import datetime, timedelta
+from typing import Union, Any
 
-from fastapi import Depends
+from fastapi import Depends, HTTPException
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi_pagination import Params, paginate
+from jose import jwt
+from pydantic import ValidationError
 from sqlalchemy import select
+from starlette import status
 
-from app.core.security import get_password_hash
+from app.config import JWTConfig
+from app.core.exception import NoSuchId, EmailExist, PhoneExist
+
+from app.core.security import get_password_hash, verify_password
 from app.db import models
 from app.db.database import async_session
+from app.schemas.token_schemas import TokenPayload, SystemUser, UserAuth
 from app.schemas.user_schemas import UserSignupRequest, UserUpdateRequest, User
-from app.core.exception import NoSuchId, EmailExist, PhoneExist
+
+settings = JWTConfig()
+reuseable_oauth = OAuth2PasswordBearer(
+    tokenUrl="/login",
+    scheme_name="JWT"
+)
 
 
 class AbstractRepository(ABC):
@@ -120,3 +135,116 @@ class SQLAlchemyRepository(ABC):
                 setattr(result, key, value)
                 await session.commit()
             return result
+
+
+class AbstractRepositoryJWT(ABC):
+    @abstractmethod
+    async def get_current_user(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    async def create_access_token(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    async def create_refresh_token(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    async def create_user(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    async def login(self):
+        raise NotImplementedError
+
+
+class JWTRepository(AbstractRepositoryJWT):
+    model = None
+
+    def __init__(self, form_data=OAuth2PasswordRequestForm):
+        self.form_data = form_data
+
+    async def get_current_user(self, token: str = Depends(reuseable_oauth)):
+        try:
+            payload = jwt.decode(
+                token, settings.jwt_secret_key, algorithms=[settings.algorithm]
+            )
+            token_data = TokenPayload(**payload)
+            print(token_data)
+
+            if datetime.fromtimestamp(token_data.exp) < datetime.now():
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Token expired",
+                    headers={"WWW-Authenticate": "Bearer"},
+                )
+        except(jwt.JWTError, ValidationError):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Could not validate credentials",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        async with async_session() as session:
+            db = await session.execute(select(self.model).filter(self.model.email == token_data.sub))
+            db = db.scalar()
+            if db is None:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Could not find user",
+                )
+            return db
+
+    async def create_access_token(self, subject: Union[str, Any], expires_delta: int = None) -> str:
+        if expires_delta is not None:
+            expires_delta = datetime.utcnow() + expires_delta
+        else:
+            expires_delta = datetime.utcnow() + timedelta(minutes=settings.access_token_expire_minutes)
+
+        to_encode = {"exp": expires_delta, "sub": str(subject)}
+        encoded_jwt = jwt.encode(to_encode, settings.jwt_secret_key, settings.algorithm)
+        return encoded_jwt
+
+    async def create_refresh_token(self, subject: Union[str, Any], expires_delta: int = None) -> str:
+        if expires_delta is not None:
+            expires_delta = datetime.utcnow() + expires_delta
+        else:
+            expires_delta = datetime.utcnow() + timedelta(minutes=settings.refresh_token_expire_minutes)
+
+        to_encode = {"exp": expires_delta, "sub": str(subject)}
+        encoded_jwt = jwt.encode(to_encode, settings.jwt_refresh_secret_key, settings.algorithm)
+        return encoded_jwt
+
+    async def create_user(self, data: UserAuth):
+        async with async_session() as session:
+            email_check = await session.execute(select(self.model).where(self.model.email == data.email))
+            email_check = email_check.scalar()
+            if email_check:
+                raise EmailExist
+            _user = models.User(
+                email=data.email,
+                hashed_password=get_password_hash(data.hashed_password)
+            )
+            session.add(_user)
+            await session.commit()
+            return _user
+
+    async def login(self, form_data: OAuth2PasswordRequestForm = Depends()):
+        async with async_session() as session:
+            email_check = await session.execute(select(self.model).filter(self.model.email == form_data.username))
+            email_check = email_check.scalar()
+            if email_check is None:
+                raise EmailExist
+            user = await session.execute(select(self.model).filter(self.model.email == form_data.username))
+            user = user.scalar()
+            hashed_pass = user.hashed_password
+            if not verify_password(form_data.password, hashed_pass):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Incorrect email or password"
+                )
+
+        return {
+            "access_token": await self.create_access_token(user.email),
+            "refresh_token": await self.create_refresh_token(user.email),
+        }
