@@ -1,7 +1,6 @@
 from abc import abstractmethod, ABC
 from datetime import datetime, timedelta
 from typing import Union, Any
-
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi_pagination import Params, paginate
@@ -9,9 +8,8 @@ from jose import jwt
 from pydantic import ValidationError
 from sqlalchemy import select
 from starlette import status
-
 from app.config import JWTConfig
-from app.core.exception import NoSuchId, EmailExist, PhoneExist
+from app.core.exception import NoSuchId, EmailExist, PhoneExist, ForbiddenToUpdate, ForbiddenToDelete
 
 from app.core.security import get_password_hash, verify_password
 from app.db import models
@@ -61,6 +59,10 @@ class AbstractRepository(ABC):
 
     @abstractmethod
     async def get_all_users_paginated(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    async def get_current_user_dependency(self):
         raise NotImplementedError
 
 
@@ -116,23 +118,28 @@ class SQLAlchemyRepository(ABC):
             await session.commit()
             return _user
 
-    async def delete_user(self, user_id: int):
+    async def delete_user(self, user_id: int, current_user: User):
         async with async_session() as session:
             result = await self.get_user_id(user_id)
+            if current_user.id != result.id:
+                raise ForbiddenToDelete
             user_to_show = result
             await session.delete(result)
             await session.commit()
             return user_to_show
 
-    async def update_user(self, user_id: int, obj_in=UserUpdateRequest):
+    async def update_user(self, user_id: int, current_user: User, obj_in=UserUpdateRequest):
         async with async_session() as session:
             result = await session.execute(select(self.model).filter(self.model.id == user_id))
             result = result.scalar()
-            await self.check_phone(obj_in)
             if not result:
                 raise NoSuchId
+            if current_user.id != result.id:
+                raise ForbiddenToUpdate
             for key, value in obj_in.model_dump(exclude_unset=True).items():
                 setattr(result, key, value)
+                if key == 'hashed_password':
+                    setattr(result, 'hashed_password', get_password_hash(obj_in.hashed_password))
                 await session.commit()
             return result
 

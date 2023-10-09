@@ -7,6 +7,7 @@ from tests.conftest import Localsession
 
 client = TestClient(app)
 
+
 def test_health_check(client):
     response = client.get('/')
     assert response.status_code == 200
@@ -112,14 +113,14 @@ def test_update_user():
             user_id = user.id
 
             update_data = {
-                "email": "newemail@example.com"
+                "firstname": "Doe"
             }
             response = client.patch(f"/users/{user_id}/update", json=update_data)
 
             assert response.status_code == 200
 
         finally:
-            session.query(User).filter(User.email == "testemail@gmail.com").delete(synchronize_session=False)
+            session.query(User).filter(User.id == user_id).delete(synchronize_session=False)
             session.commit()
 
 
