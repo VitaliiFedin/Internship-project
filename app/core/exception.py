@@ -47,3 +47,19 @@ class ForbiddenToDelete(HTTPException):
             status_code=403,
             detail=detail,
         )
+
+
+class ForbiddenToUpdateCompany(HTTPException):
+    def __init__(self, detail="You can\'t update this company"):
+        super().__init__(
+            status_code=403,
+            detail=detail,
+        )
+
+
+class ForbiddenToDeleteCompany(HTTPException):
+    def __init__(self, detail="You can\'t delete this company"):
+        super().__init__(
+            status_code=403,
+            detail=detail,
+        )

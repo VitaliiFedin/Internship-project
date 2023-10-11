@@ -29,7 +29,7 @@ class Company(Model):
     title = Column(String)
     description = Column(Text)
     city = Column(String)
-    phone = Column(BigInteger)
+    phone = Column(BigInteger, unique=True)
     links = Column(ARRAY(String), server_default=text("'{mylink}'"))
     avatar = Column(String, server_default=text("'myavatar'"))
     is_visible = Column(Boolean, server_default=text('TRUE'))

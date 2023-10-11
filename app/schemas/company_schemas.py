@@ -1,6 +1,5 @@
 from typing import List, Optional
-from datetime import datetime
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
 class Company(BaseModel):
@@ -13,6 +12,7 @@ class Company(BaseModel):
     links: Optional[List[str]]
     avatar: Optional[str]
     is_visible: bool
+    owner: int
 
 
 class CompanyCreate(BaseModel):
@@ -21,11 +21,13 @@ class CompanyCreate(BaseModel):
     description: str
     city: str
     phone: int
-    links: Optional[List[str]]
-    avatar: Optional[str]
     is_visible: bool
 
 
 class CompanyUpdate(BaseModel):
     name: Optional[str]
-    description: Optional[str]
+    description: Optional[str] = None
+    is_visible: Optional[bool] = None
+
+class CompanyReturn(BaseModel):
+    company:Company
