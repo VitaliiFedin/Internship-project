@@ -35,11 +35,7 @@ class UserSignupRequest(BaseModel):
 
 class UserUpdateRequest(BaseModel):
     firstname: Optional[str] = None
-    lastname: Optional[str] = None
-    city: Optional[str] = None
-    phone: Optional[int] = None
-    links: Optional[List[str]] = None
-    avatar: Optional[str] = None
+    hashed_password: Optional[str] = None
 
 
 class UserListResponse(BaseModel):
@@ -48,4 +44,3 @@ class UserListResponse(BaseModel):
 
 class UserDetailResponse(BaseModel):
     user: User
-

@@ -2,6 +2,7 @@ from fastapi import APIRouter
 from fastapi.params import Depends
 from fastapi_pagination import Page, Params
 
+from app.core.dependencies import get_current_user_dependency
 from app.repositories.users import UsersRepository
 from app.schemas.user_schemas import User, UserSignupRequest, UserDetailResponse, UserUpdateRequest
 
@@ -14,8 +15,8 @@ async def post_user(user_in: UserSignupRequest):
 
 
 @user.delete('/users/{user_id}/delete')
-async def delete_user(user_id: int):
-    return await UsersRepository().delete_user(user_id)
+async def delete_user(user_id: int, current_user: User = Depends(get_current_user_dependency)):
+    return await UsersRepository().delete_user(user_id, current_user)
 
 
 @user.get('/users', response_model=Page[User])
@@ -30,6 +31,5 @@ async def user_get(user_id: int):
 
 
 @user.patch('/users/{user_id}/update')
-async def user_update(user_id: int, obj: UserUpdateRequest):
-    return await UsersRepository().update_user(user_id, obj)
-
+async def user_update(user_id: int, obj: UserUpdateRequest, current_user: User = Depends(get_current_user_dependency)):
+    return await UsersRepository().update_user(user_id, current_user, obj)

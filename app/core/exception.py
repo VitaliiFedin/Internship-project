@@ -31,3 +31,19 @@ class PhoneExist(HTTPException):
             status_code=404,
             detail=detail,
         )
+
+
+class ForbiddenToUpdate(HTTPException):
+    def __init__(self, detail="You can\'t update this user"):
+        super().__init__(
+            status_code=403,
+            detail=detail,
+        )
+
+
+class ForbiddenToDelete(HTTPException):
+    def __init__(self, detail="You can\'t delete this user"):
+        super().__init__(
+            status_code=403,
+            detail=detail,
+        )

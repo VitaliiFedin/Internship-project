@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from app.repositories.jwt import JWTRepos
-from app.schemas.token_schemas import TokenSchema, UserAuth, UserOut, SystemUser
+from app.schemas.token_schemas import TokenSchema, UserAuth, UserOut
 
 reuseable_oauth = OAuth2PasswordBearer(
     tokenUrl="/login",
