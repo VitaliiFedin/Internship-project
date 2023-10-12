@@ -25,7 +25,7 @@ class CompanyCreate(BaseModel):
 
 
 class CompanyUpdate(BaseModel):
-    name: Optional[str]
+    name: Optional[str] = None
     description: Optional[str] = None
     is_visible: Optional[bool] = None
 

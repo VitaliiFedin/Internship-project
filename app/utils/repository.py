@@ -1,7 +1,7 @@
 from abc import abstractmethod, ABC
 from datetime import datetime, timedelta
 from typing import Union, Any
-
+from sqlalchemy import or_
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi_pagination import Params, paginate
@@ -300,29 +300,30 @@ class CompanyRepository(AbstractRepositoryCompany):
             if phone_check:
                 raise PhoneExist
 
-    async def get_company_by_id(self, company_id: int):
+    async def get_company_by_id(self, company_id: int, current_user: User):
         async with async_session() as session:
-            result = await session.execute(
-                select(self.model).filter(self.model.id == company_id).where(self.model.is_visible == True))
+            result = await session.execute(select(self.model).filter(self.model.id == company_id).where(
+                or_(self.model.is_visible == True, self.model.owner == current_user.id)))
+
             result = result.scalar()
             if not result:
                 raise NoSuchId
             return result
 
-    async def get_one_company(self, company_id: int):
+    async def get_one_company(self, company_id: int, current_user: User):
         async with async_session() as session:
-            result = await self.get_company_by_id(company_id)
+            result = await self.get_company_by_id(company_id, current_user)
         return result
 
-    async def get_all_companies(self, params: Params = Depends()):
+    async def get_all_companies(self, current_user:User, params: Params = Depends()):
         async with async_session() as session:
-            result = await session.execute(select(self.model).where(self.model.is_visible == True))
+            result = await session.execute(select(self.model).where(or_(self.model.is_visible == True,self.model.owner == current_user.id )))
             result = result.scalars().all()
             return paginate(result, params)
 
     async def delete_company(self, company_id: int, current_user: User):
         async with async_session() as session:
-            company_to_delete = await self.get_company_by_id(company_id)
+            company_to_delete = await self.get_company_by_id(company_id, current_user)
             if not company_to_delete:
                 raise NoSuchId
             if company_to_delete.owner != current_user.id:
@@ -356,7 +357,6 @@ class CompanyRepository(AbstractRepositoryCompany):
                 raise NoSuchId
             if company.owner != current_user.id:
                 raise ForbiddenToUpdateCompany
-            await self.check_phone(CompanyCreate)
             for key, value in model.model_dump(exclude_unset=True).items():
                 setattr(company, key, value)
                 await session.commit()
