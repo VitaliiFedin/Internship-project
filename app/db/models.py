@@ -1,6 +1,5 @@
-from sqlalchemy import Column, Integer, String, Boolean, ARRAY, TIMESTAMP,text, BigInteger
+from sqlalchemy import Column, Integer, String, Boolean, ARRAY, TIMESTAMP, text, BigInteger, ForeignKey, Text
 from sqlalchemy.ext.declarative import declarative_base
-
 
 Model = declarative_base()
 
@@ -21,3 +20,17 @@ class User(Model):
     is_superuser = Column(Boolean, server_default=text('FALSE'))
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
     updated_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
+
+
+class Company(Model):
+    __tablename__ = 'companies'
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(40))
+    title = Column(String)
+    description = Column(Text)
+    city = Column(String)
+    phone = Column(BigInteger, unique=True)
+    links = Column(ARRAY(String), server_default=text("'{mylink}'"))
+    avatar = Column(String, server_default=text("'myavatar'"))
+    is_visible = Column(Boolean, server_default=text('TRUE'))
+    owner = Column(Integer, ForeignKey('users.id'))

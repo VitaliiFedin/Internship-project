@@ -1,6 +1,7 @@
 from abc import abstractmethod, ABC
 from datetime import datetime, timedelta
 from typing import Union, Any
+from sqlalchemy import or_
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi_pagination import Params, paginate
@@ -8,13 +9,15 @@ from jose import jwt
 from pydantic import ValidationError
 from sqlalchemy import select
 from starlette import status
-from app.config import JWTConfig
-from app.core.exception import NoSuchId, EmailExist, PhoneExist, ForbiddenToUpdate, ForbiddenToDelete
 
+from app.config import JWTConfig
+from app.core.exception import NoSuchId, EmailExist, PhoneExist, ForbiddenToUpdate, \
+    ForbiddenToDelete, ForbiddenToUpdateCompany, ForbiddenToDeleteCompany
 from app.core.security import get_password_hash, verify_password
 from app.db import models
 from app.db.database import async_session
-from app.schemas.token_schemas import TokenPayload, SystemUser, UserAuth
+from app.schemas.company_schemas import CompanyCreate, CompanyUpdate, Company
+from app.schemas.token_schemas import TokenPayload, UserAuth
 from app.schemas.user_schemas import UserSignupRequest, UserUpdateRequest, User
 
 settings = JWTConfig()
@@ -255,3 +258,106 @@ class JWTRepository(AbstractRepositoryJWT):
             "access_token": await self.create_access_token(user.email),
             "refresh_token": await self.create_refresh_token(user.email),
         }
+
+
+class AbstractRepositoryCompany(ABC):
+    @abstractmethod
+    async def get_one_company(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    async def get_all_companies(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    async def create_new_company(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    async def delete_company(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    async def update_company(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    async def get_company_by_id(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    async def check_phone(self):
+        raise NotImplementedError
+
+
+class CompanyRepository(AbstractRepositoryCompany):
+    model = None
+
+    async def check_phone(self, model_to_use: Company):
+        async with async_session() as session:
+            phone_check = await session.execute(select(self.model).where(self.model.phone == model_to_use.phone))
+            phone_check = phone_check.scalar()
+            if phone_check:
+                raise PhoneExist
+
+    async def get_company_by_id(self, company_id: int, current_user: User):
+        async with async_session() as session:
+            result = await session.execute(select(self.model).filter(self.model.id == company_id).where(
+                or_(self.model.is_visible == True, self.model.owner == current_user.id)))
+
+            result = result.scalar()
+            if not result:
+                raise NoSuchId
+            return result
+
+    async def get_one_company(self, company_id: int, current_user: User):
+        async with async_session() as session:
+            result = await self.get_company_by_id(company_id, current_user)
+        return result
+
+    async def get_all_companies(self, current_user:User, params: Params = Depends()):
+        async with async_session() as session:
+            result = await session.execute(select(self.model).where(or_(self.model.is_visible == True,self.model.owner == current_user.id )))
+            result = result.scalars().all()
+            return paginate(result, params)
+
+    async def delete_company(self, company_id: int, current_user: User):
+        async with async_session() as session:
+            company_to_delete = await self.get_company_by_id(company_id, current_user)
+            if not company_to_delete:
+                raise NoSuchId
+            if company_to_delete.owner != current_user.id:
+                raise ForbiddenToDeleteCompany
+            company_to_show = company_to_delete
+            await session.delete(company_to_delete)
+            await session.commit()
+            return company_to_show
+
+    async def create_new_company(self, model_to_use: CompanyCreate, current_user: User):
+        async with async_session() as session:
+            await self.check_phone(model_to_use)
+            company = self.model(
+                name=model_to_use.name,
+                title=model_to_use.title,
+                description=model_to_use.description,
+                city=model_to_use.city,
+                phone=model_to_use.phone,
+                is_visible=model_to_use.is_visible,
+                owner=current_user.id
+            )
+            session.add(company)
+            await session.commit()
+            return company
+
+    async def update_company(self, company_id: int, model: CompanyUpdate, current_user: User):
+        async with async_session() as session:
+            company = await session.execute(select(self.model).filter(self.model.id == company_id))
+            company = company.scalar()
+            if not company:
+                raise NoSuchId
+            if company.owner != current_user.id:
+                raise ForbiddenToUpdateCompany
+            for key, value in model.model_dump(exclude_unset=True).items():
+                setattr(company, key, value)
+                await session.commit()
+            return company
