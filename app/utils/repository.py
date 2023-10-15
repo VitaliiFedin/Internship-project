@@ -293,6 +293,18 @@ class AbstractRepositoryCompany(ABC):
     async def check_phone(self):
         raise NotImplementedError
 
+    @abstractmethod
+    async def make_admin(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    async def remove_admin(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    async def get_all_admins(self):
+        raise NotImplementedError
+
 
 class CompanyRepository(AbstractRepositoryCompany):
     model = None
@@ -367,6 +379,58 @@ class CompanyRepository(AbstractRepositoryCompany):
                 await session.commit()
             return company
 
+    async def make_admin(self, company_id: int, user_id: int, current_user: User):
+        async with async_session() as session:
+            company = await session.execute(
+                select(models.Company).filter(models.Company.id == company_id, models.Company.owner == current_user.id))
+            company = company.scalar()
+            if not company:
+                raise ForbiddenToProceed
+            user = await session.execute(
+                select(models.User).filter(models.User.id == user_id))
+            user = user.scalar()
+            if not user:
+                raise NoSuchId
+            if user.id in company.member_ids:
+                administrator = models.Administrator(company=company, user=user)
+                session.add(administrator)
+                await session.commit()
+                return {"message": "Administrator appointed"}
+            raise HTTPException(status_code=400, detail="User is not a member of the company")
+
+    async def remove_admin(self, company_id: int, user_id: int, current_user: User):
+        async with async_session() as session:
+            company = await session.execute(
+                select(models.Company).filter(self.model.id == company_id, self.model.owner == current_user.id))
+            company = company.scalar()
+            if not company:
+                raise ForbiddenToProceed
+            user = await session.execute(
+                select(models.User).filter(models.User.id == user_id))
+            user = user.scalar()
+            if not user:
+                raise NoSuchId
+            administrator = await session.execute(
+                select(models.Administrator).filter(models.Administrator.company_id == company_id,
+                                                    models.Administrator.user_id == user_id))
+            administrator = administrator.scalar()
+            if administrator:
+                await session.delete(administrator)
+                await session.commit()
+                return {"message": "Administrator removed"}
+            raise HTTPException(status_code=404, detail="Administrator not found")
+
+    async def get_all_admins(self, company_id:int, current_user:User):
+        async with async_session() as session:
+            company = await session.execute(
+                select(models.Company).filter(self.model.id == company_id, self.model.owner == current_user.id))
+            company = company.scalar()
+            if not company:
+                raise ForbiddenToProceed
+            admins = await session.execute(select(models.Administrator).filter(models.Administrator.company_id==company_id))
+            admins = admins.scalars().all()
+            return {'Admins':admins}
+
 
 class AbstractRepositoryAction(ABC):
     @abstractmethod
@@ -425,10 +489,10 @@ class AbstractRepositoryAction(ABC):
 class ActionRepository(AbstractRepositoryAction):
     model = None
 
-    async def invite_user(self, company_id: int, invitation: InvitationRequest, curren_user: User):
+    async def invite_user(self, company_id: int, invitation: InvitationRequest, current_user: User):
         async with async_session() as session:
             company = await session.execute(
-                select(models.Company).filter(models.Company.id == company_id, models.Company.owner == curren_user.id))
+                select(models.Company).filter(models.Company.id == company_id, models.Company.owner == current_user.id))
             company = company.scalar()
             if not company:
                 raise ForbiddenToProceed
@@ -493,6 +557,10 @@ class ActionRepository(AbstractRepositoryAction):
                 await session.delete(invitation)
                 company = await session.execute(select(models.Company).filter(models.Company.id == company_id))
                 company = company.scalar()
+                if not company:
+                    raise NoSuchId
+                if company.member_ids is None:
+                    company.member_ids = []
                 company.member_ids.append(current_user.id)
                 await session.commit()
                 return {'Invitation': 'Accepted'}
