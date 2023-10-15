@@ -20,11 +20,11 @@ app.add_middleware(CORSMiddleware,
                    allow_headers=settings.allow_headers,
                    )
 app.include_router(router)
-app.include_router(user)
+app.include_router(user, tags=["User"])
 app.include_router(jwt)
 app.include_router(auth0)
-app.include_router(company)
-app.include_router(action)
+app.include_router(company, tags=["Company"])
+app.include_router(action, tags=["Actions"])
 
 if __name__ == '__main__':
     uvicorn.run(settings.app_name, reload=settings.reload, host=settings.host, port=settings.port,
