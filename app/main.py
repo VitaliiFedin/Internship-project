@@ -9,6 +9,7 @@ from routers.user_routers import user
 from app.routers.jwt_routers import jwt
 from app.routers.auth0_routers import auth0
 from app.routers.company_routers import company
+from app.routers.action_routers import action
 settings = FastAPIConfig()
 app = FastAPI()
 
@@ -23,6 +24,7 @@ app.include_router(user)
 app.include_router(jwt)
 app.include_router(auth0)
 app.include_router(company)
+app.include_router(action)
 
 if __name__ == '__main__':
     uvicorn.run(settings.app_name, reload=settings.reload, host=settings.host, port=settings.port,
