@@ -36,7 +36,7 @@ class Company(Model):
     avatar = Column(String, server_default=text("'myavatar'"))
     is_visible = Column(Boolean, server_default=text('TRUE'))
     owner = Column(Integer, ForeignKey('users.id'))
-    member_ids = Column(MutableList.as_mutable(ARRAY(Integer)))
+    member_ids = Column(MutableList.as_mutable(ARRAY(Integer)),server_default="{}")
     owner_relationship = relationship('User', back_populates='user_company')
 
 
