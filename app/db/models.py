@@ -59,3 +59,38 @@ class Administrator(Model):
     user_id = Column(Integer, ForeignKey('users.id'))
     company = relationship('Company', back_populates='administrators')
     user = relationship('User', back_populates='administered_companies')
+
+
+class Quizz(Model):
+    __tablename__ = 'quizzes'
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String)
+    title = Column(String)
+    description = Column(String)
+    frequency = Column(Integer)
+    company_id = Column(Integer, ForeignKey('companies.id'))
+    created_by = Column(Integer, ForeignKey('users.id'))
+    updated_by = Column(Integer, ForeignKey('users.id'))
+
+
+class Question(Model):
+    __tablename__ = 'questions'
+    id = Column(Integer, primary_key=True, index=True)
+    text = Column(String)
+    answers = Column(MutableList.as_mutable(ARRAY(String)), server_default="{}")
+    correct_answer = Column(String)
+    quiz_id = Column(Integer, ForeignKey('quizzes.id'))
+    company_id = Column(Integer, ForeignKey('companies.id'))
+    created_by = Column(Integer, ForeignKey('users.id'))
+    updated_by = Column(Integer, ForeignKey('users.id'))
+
+
+class Result(Model):
+    __tablename__ = 'results'
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey('users.id'))
+    company_id = Column(Integer, ForeignKey('companies.id'))
+    quiz_id = Column(Integer, ForeignKey('quizzes.id'))
+    right_count = Column(Integer)
+    total_count = Column(Integer)
+    created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
