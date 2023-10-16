@@ -396,7 +396,8 @@ class CompanyRepository(AbstractRepositoryCompany):
                 session.add(administrator)
                 await session.commit()
                 return {"message": "Administrator appointed"}
-            raise HTTPException(status_code=400, detail="User is not a member of the company")
+            else:
+                raise HTTPException(status_code=400, detail="User is not a member of the company")
 
     async def remove_admin(self, company_id: int, user_id: int, current_user: User):
         async with async_session() as session:
