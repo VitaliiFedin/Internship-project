@@ -24,6 +24,7 @@ from app.schemas.company_schemas import CompanyCreate, CompanyUpdate, Company
 from app.schemas.quizz_schemas import CreateQuizz, UpdateQuizz
 from app.schemas.token_schemas import TokenPayload, UserAuth
 from app.schemas.user_schemas import UserSignupRequest, UserUpdateRequest, User
+from app.schemas.question_schemas import CreateQuestion
 
 settings = JWTConfig()
 reuseable_oauth = OAuth2PasswordBearer(
@@ -780,3 +781,39 @@ class QuizzRepository(AbstractRepositoryQuizz):
             await session.delete(quizz)
             await session.commit()
             return quizz_to_show
+
+    async def create_questions(self, company_id: int, quiz_id: int, form: CreateQuestion, current_user: User):
+        async with async_session() as session:
+            quiz = await session.execute(select(self.model).filter(self.model.id == quiz_id))
+            quizz = quiz.scalar()
+            if not quizz:
+                raise NoSuchId
+            await self.check_owner_admin(company_id, current_user)
+            question = models.Question(
+                text=form.text,
+                answers=form.answers,
+                correct_answer=form.correct_answer,
+                quiz_id=quiz_id,
+                company_id=company_id,
+                created_by=current_user.id
+            )
+            session.add(question)
+            await session.commit()
+            return question
+
+    async def get_questions(self, company_id: int, quiz_id: int, current_user: User):
+        async with async_session() as session:
+            quiz = await session.execute(select(self.model).filter(self.model.id == quiz_id))
+            quizz = quiz.scalar()
+            if not quizz:
+                raise NoSuchId
+            company = await session.execute(select(models.Company).filter(models.Company.id == company_id))
+            company = company.scalar()
+            if not company:
+                raise NoSuchId
+            if current_user.id in company.member_ids or company.owner == current_user.id:
+                question = await session.execute(select(models.Question).filter(models.Question.quiz_id == quiz_id))
+                question = question.scalars().all()
+                return question
+            else:
+                raise HTTPException(status_code=403, detail="You are not in this company")

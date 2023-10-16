@@ -11,6 +11,7 @@ from app.routers.auth0_routers import auth0
 from app.routers.company_routers import company
 from app.routers.action_routers import action
 from app.routers.quizz_routers import quizz
+from app.routers.question_routers import question
 settings = FastAPIConfig()
 app = FastAPI()
 
@@ -27,6 +28,7 @@ app.include_router(auth0)
 app.include_router(company, tags=["Company"])
 app.include_router(action, tags=["Actions"])
 app.include_router(quizz, tags=["Quizzes"])
+app.include_router(question, tags=["Questions"])
 if __name__ == '__main__':
     uvicorn.run(settings.app_name, reload=settings.reload, host=settings.host, port=settings.port,
                 log_config=logging_config)
