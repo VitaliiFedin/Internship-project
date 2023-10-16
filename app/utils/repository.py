@@ -651,7 +651,7 @@ class ActionRepository(AbstractRepositoryAction):
             request = request.scalar()
             if not request:
                 raise RequestNotFound
-            if answer.accept == True:
+            if answer.accept:
                 await session.delete(request)
                 company = await session.execute(select(models.Company).filter(models.Company.id == company_id))
                 company = company.scalar()
