@@ -24,7 +24,7 @@ from app.schemas.company_schemas import CompanyCreate, CompanyUpdate, Company
 from app.schemas.quizz_schemas import CreateQuizz, UpdateQuizz
 from app.schemas.token_schemas import TokenPayload, UserAuth
 from app.schemas.user_schemas import UserSignupRequest, UserUpdateRequest, User
-from app.schemas.question_schemas import CreateQuestion
+from app.schemas.question_schemas import CreateQuestion, UserAnswers
 
 settings = JWTConfig()
 reuseable_oauth = OAuth2PasswordBearer(
@@ -817,3 +817,83 @@ class QuizzRepository(AbstractRepositoryQuizz):
                 return question
             else:
                 raise HTTPException(status_code=403, detail="You are not in this company")
+
+    async def attempt_questions(self, quiz_id: int, company_id: int, user_answer: UserAnswers, current_user: User):
+        async with async_session() as session:
+            quiz = await session.execute(select(models.Quizz).filter(models.Quizz.id == quiz_id))
+            quiz = quiz.scalar()
+            if not quiz:
+                raise NoSuchId
+            company = await session.execute(select(models.Company).filter(models.Company.id == company_id))
+            company = company.scalar()
+            if not company:
+                raise NoSuchId
+            if current_user.id not in company.member_ids:
+                raise HTTPException(status_code=403, detail="You are not in company")
+            questions = await session.execute(select(models.Question).filter(models.Question.quiz_id == quiz_id))
+            questions = questions.scalars().all()
+            if not questions:
+                raise HTTPException(status_code=403, detail="No questions")
+            if len(user_answer.answers) != len(questions):
+                raise HTTPException(status_code=400, detail="User must provide answers for all questions")
+            correct_answers = 0
+            for i, question in enumerate(questions):
+                if user_answer.answers[i] == question.correct_answer:
+                    correct_answers += 1
+
+            result = models.Result(
+                user_id=current_user.id,
+                company_id=company_id,
+                quiz_id=quiz_id,
+                right_count=correct_answers,
+                total_count=len(questions)
+            )
+            session.add(result)
+            await session.commit()
+            return result
+
+    async def get_user_rating(self, user_id: int):
+        async with async_session() as session:
+            user = await session.execute(select(models.User).filter(models.User.id == user_id))
+            user = user.scalar()
+            if not user:
+                raise NoSuchId
+            results = await session.execute(select(models.Result).filter(models.Result.user_id == user_id))
+            results = results.scalars().all()
+            total_correct = 0
+            total_questions = 0
+
+            for result in results:
+                total_correct += result.right_count
+                total_questions += result.total_count
+
+            if total_questions == 0:
+                return 0
+
+            rating = total_correct / total_questions
+            return {"Rating": rating.__round__(2)}
+
+    async def get_user_rating_company(self, user_id: int, company_id: int, current_user: User):
+        async with async_session() as session:
+            company = await session.execute(select(models.Company).filter(models.Company.id == company_id))
+            company = company.scalar()
+            if not company:
+                raise HTTPException(status_code=403, detail="You are not in company")
+            if user_id not in company.member_ids:
+                await self.check_owner_admin(company_id, current_user)
+                raise HTTPException(status_code=403, detail="You are not in company")
+
+            results = await session.execute(select(models.Result).filter(models.Result.user_id == user_id))
+            results = results.scalars().all()
+            total_correct = 0
+            total_questions = 0
+
+            for result in results:
+                total_correct += result.right_count
+                total_questions += result.total_count
+
+            if total_questions == 0:
+                return 0
+
+            rating = total_correct / total_questions
+            return {"Rating": rating.__round__(2)}
