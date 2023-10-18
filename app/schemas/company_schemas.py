@@ -13,6 +13,7 @@ class Company(BaseModel):
     avatar: Optional[str]
     is_visible: bool
     owner: int
+    member_ids: Optional[List[int]]
 
 
 class CompanyCreate(BaseModel):
@@ -29,5 +30,6 @@ class CompanyUpdate(BaseModel):
     description: Optional[str] = None
     is_visible: Optional[bool] = None
 
+
 class CompanyReturn(BaseModel):
-    company:Company
+    company: Company

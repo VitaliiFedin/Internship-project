@@ -63,3 +63,27 @@ class ForbiddenToDeleteCompany(HTTPException):
             status_code=403,
             detail=detail,
         )
+
+
+class ForbiddenToProceed(HTTPException):
+    def __init__(self, detail="You are not owner of this company"):
+        super().__init__(
+            status_code=403,
+            detail=detail,
+        )
+
+
+class InvitationNotFound(HTTPException):
+    def __init__(self, detail="Invitation was not found"):
+        super().__init__(
+            status_code=403,
+            detail=detail,
+        )
+
+
+class RequestNotFound(HTTPException):
+    def __init__(self, detail="Request was not found"):
+        super().__init__(
+            status_code=403,
+            detail=detail,
+        )
