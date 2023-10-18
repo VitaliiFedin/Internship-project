@@ -11,7 +11,7 @@ company = APIRouter()
 
 @company.get('/companies', response_model=Page[Company])
 async def get_all_companies(current_user: User = Depends(get_current_user_dependency), params: Params = Depends()):
-    return await CompanyRepos().get_all_companies(current_user,params)
+    return await CompanyRepos().get_all_companies(current_user, params)
 
 
 @company.get('/company/{company_id}', response_model=Company)
@@ -33,3 +33,18 @@ async def post_company(company: CompanyCreate, current_user: User = Depends(get_
 async def update_company(company_id: int, model_to_update: CompanyUpdate,
                          current_user: User = Depends(get_current_user_dependency)):
     return await CompanyRepos().update_company(company_id, model_to_update, current_user)
+
+
+@company.post('/company/admin')
+async def make_admin(company_id: int, user_id: int, current_user: User = Depends(get_current_user_dependency)):
+    return await CompanyRepos().make_admin(company_id, user_id, current_user)
+
+
+@company.delete('/company/admin/{user_id}')
+async def delete_admin(company_id: int, user_id: int, current_user: User = Depends(get_current_user_dependency)):
+    return await CompanyRepos().remove_admin(company_id, user_id, current_user)
+
+
+@company.get('/company/admins/{company_id}')
+async def get_all_admins(company_id: int, current_user: User = Depends(get_current_user_dependency)):
+    return await CompanyRepos().get_all_admins(company_id, current_user)

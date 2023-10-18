@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, Boolean, ARRAY, TIMESTAMP, text,
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.mutable import MutableList
+
 Model = declarative_base()
 
 
@@ -36,8 +37,9 @@ class Company(Model):
     avatar = Column(String, server_default=text("'myavatar'"))
     is_visible = Column(Boolean, server_default=text('TRUE'))
     owner = Column(Integer, ForeignKey('users.id'))
-    member_ids = Column(MutableList.as_mutable(ARRAY(Integer)),server_default="{}")
-    owner_relationship = relationship('User', back_populates='user_company')
+    member_ids = Column(MutableList.as_mutable(ARRAY(Integer)), server_default="{}")
+    admin_ids = Column(MutableList.as_mutable(ARRAY(Integer)), server_default="{}")
+    owner_relationship = relationship('User', back_populates='user_company', foreign_keys=[owner])
 
 
 class UsersCompaniesActions(Model):
@@ -46,5 +48,3 @@ class UsersCompaniesActions(Model):
     user_id = Column(Integer, ForeignKey('users.id'))
     company_id = Column(Integer, ForeignKey('companies.id'))
     action = Column(String)
-
-
