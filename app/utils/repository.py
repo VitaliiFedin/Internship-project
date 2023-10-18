@@ -391,12 +391,12 @@ class CompanyRepository(AbstractRepositoryCompany):
             user = user.scalar()
             if not user:
                 raise NoSuchId
-            if user.id in company.member_ids:
-                company.admin_ids.append(user_id)
-                await session.commit()
-                return {"message": "Administrator appointed"}
-            else:
+            if user.id not in company.member_ids:
                 raise HTTPException(status_code=400, detail="User is not a member of the company")
+
+            company.admin_ids.append(user_id)
+            await session.commit()
+            return {"message": "Administrator appointed"}
 
     async def get_all_admins(self, company_id:int, current_user:User):
         async with async_session() as session:
@@ -420,11 +420,12 @@ class CompanyRepository(AbstractRepositoryCompany):
             user = user.scalar()
             if not user:
                 raise NoSuchId
-            if user.id in company.admin_ids:
-                company.admin_ids.remove(user.id)
-                await session.commit()
-                return {"message": "Administrator removed"}
-            raise HTTPException(status_code=404, detail="Administrator not found")
+            if user.id not in company.admin_ids:
+                raise HTTPException(status_code=404, detail="Administrator not found")
+            company.admin_ids.remove(user.id)
+            await session.commit()
+            return {"message": "Administrator removed"}
+
 
 class AbstractRepositoryAction(ABC):
     @abstractmethod

@@ -62,12 +62,12 @@ class ActionRepository(AbstractRepositoryAction):
                 select(self.model).filter(self.model.user_id == user_id, self.model.company_id == company_id,
                                           self.model.action == 'invite'))
             invitation = invitation.scalar()
-            if invitation:
-                await session.delete(invitation)
-                await session.commit()
-                return {"message": "Invitation canceled"}
-            else:
+            if not invitation:
                 raise InvitationNotFound
+
+            await session.delete(invitation)
+            await session.commit()
+            return {"message": "Invitation canceled"}
 
     async def accept_invitation(self, company_id: int, current_user: User, answer: AnswerResponse):
         async with async_session() as session:
