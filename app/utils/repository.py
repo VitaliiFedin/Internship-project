@@ -300,6 +300,7 @@ class AbstractRepositoryCompany(ABC):
     async def get_all_admins(self):
         raise NotImplementedError
 
+
 class AbstractRepositoryAction(ABC):
     @abstractmethod
     async def invite_user(self):
@@ -353,6 +354,7 @@ class AbstractRepositoryAction(ABC):
     async def get_all_members(self):
         raise NotImplementedError
 
+
 class AbstractRepositoryQuizz(ABC):
     @abstractmethod
     async def create_quizz(self):
@@ -369,4 +371,3 @@ class AbstractRepositoryQuizz(ABC):
     @abstractmethod
     async def delete_quizz(self):
         raise NotImplementedError
-
