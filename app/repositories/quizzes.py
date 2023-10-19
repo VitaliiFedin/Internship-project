@@ -21,8 +21,10 @@ class QuizzRepository(AbstractRepositoryQuizz):
                 select(models.Company).filter(models.Company.owner == current_user.id, models.Company.id == company_id))
             company = company.scalar()
             if not company:
-                if current_user.id not in company.admin_ids:
-                    raise ForbiddenToProceed
+                raise ForbiddenToProceed
+            if current_user.id not in company.admin_ids:
+                raise ForbiddenToProceed
+
 
     async def create_quizz(self, company_id: int, form: CreateQuizz, current_user: User):
         async with async_session() as session:
@@ -101,8 +103,9 @@ class QuizzRepository(AbstractRepositoryQuizz):
             company = company.scalar()
             if not company:
                 raise NoSuchId
-            if current_user.id not in company.member_ids or company.owner != current_user.id:
-                raise HTTPException(status_code=403, detail="You are not in this company")
+            if current_user.id not in company.member_ids:
+                if company.owner != current_user.id:
+                    raise HTTPException(status_code=403, detail="You are not in this company")
             question = await session.execute(select(models.Question).filter(models.Question.quiz_id == quiz_id))
             question = question.scalars().all()
             return question
@@ -129,6 +132,9 @@ class QuizzRepository(AbstractRepositoryQuizz):
             for i, question in enumerate(questions):
                 if user_answer.answers[i] == question.correct_answer:
                     correct_answers += 1
+                else:
+                    print(
+                        f"Question {i + 1}: User Answer - {user_answer.answers[i]}, Correct Answer - {question.correct_answer}")
 
             result = models.Result(
                 user_id=current_user.id,

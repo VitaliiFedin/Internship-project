@@ -371,3 +371,12 @@ class AbstractRepositoryQuizz(ABC):
     async def delete_quizz(self):
         raise NotImplementedError
 
+
+class AbstractRepositoryRedis(ABC):
+    @abstractmethod
+    async def save_to_redis(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    async def read_from_redis(self):
+        raise NotImplementedError

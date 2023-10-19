@@ -7,5 +7,6 @@ from app.config import RedisConfig
 settings = RedisConfig()
 
 
-async def redis_connection():
+def redis_connection():
     connection = redis.Redis(host=settings.redis_host, port=settings.redis_port)
+    return connection

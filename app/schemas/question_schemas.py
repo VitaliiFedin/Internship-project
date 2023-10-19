@@ -15,4 +15,4 @@ class GetQuestions(BaseModel):
 
 
 class UserAnswers(BaseModel):
-    answers: List[int]
+    answers: List[str]
