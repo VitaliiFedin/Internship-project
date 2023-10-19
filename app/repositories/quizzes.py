@@ -19,16 +19,6 @@ class QuizzRepository(AbstractRepositoryQuizz):
             company = await session.execute(
                 select(models.Company).filter(models.Company.owner == current_user.id, models.Company.id == company_id))
             company = company.scalar()
-            """
-            administrator = await session.execute(
-                select(models.Administrator).filter(models.Administrator.company_id == company_id,
-                                                    models.Administrator.user_id == current_user.id))
-            administrator = administrator.scalar()
-            if not company:
-                if not administrator:
-                    raise ForbiddenToProceed
-
-    """
             if not company:
                 if current_user.id not in company.admin_ids:
                     raise ForbiddenToProceed
