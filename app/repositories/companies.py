@@ -132,6 +132,11 @@ class CompanyRepository(AbstractRepositoryCompany):
                 return {"message": "Administrator removed"}
             raise HTTPException(status_code=404, detail="Administrator not found")
 
-
+    async def check_owner_admin(self, company_id: int, current_user: User):
+        async with async_session() as session:
+            company = await self.get_company_by_id(company_id,current_user)
+            if current_user.id not in company.admin_ids:
+                    raise ForbiddenToProceed
+            return True
 class CompanyRepos(CompanyRepository):
     model = Company
