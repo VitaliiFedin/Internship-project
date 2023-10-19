@@ -1,3 +1,4 @@
+import csv
 import json
 
 from fastapi import HTTPException
@@ -56,6 +57,29 @@ class RedisRepository(AbstractRepositoryRedis):
             return result_data
         else:
             raise HTTPException(status_code=404, detail="Result not found")
+
+    async def save_to_json(self, company_id: int, user_id: int, quiz_id: int):
+        result_data = await self.read_from_redis(company_id, user_id, quiz_id)
+        json_file_path = 'exported_files/data.json'
+        if result_data:
+            # Export to JSON
+            with open(json_file_path, 'w') as json_file:
+                json.dump(result_data, json_file)
+            return json_file
+        else:
+            return {"Error": "no data"}
+        """
+        questions_data = result_data.get('question_data', [])
+        if questions_data:
+            with open('data.csv', 'w', newline='') as csv_file:
+                csv_writer = csv.DictWriter(csv_file, fieldnames=questions_data[0].keys())
+                csv_writer.writeheader()
+                for data in questions_data:
+                    csv_writer.writerow(data)
+        
+        else:
+            print("Result not found in Redis.")
+"""
 
 
 class RedisRepo(RedisRepository):
