@@ -7,24 +7,17 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi_pagination import Params, paginate
 from jose import jwt
 from pydantic import ValidationError
-from sqlalchemy import or_
 from sqlalchemy import select
-from sqlalchemy import text
 from starlette import status
 
 from app.config import JWTConfig
 from app.core.exception import NoSuchId, EmailExist, PhoneExist, ForbiddenToUpdate, \
-    ForbiddenToDelete, ForbiddenToUpdateCompany, ForbiddenToDeleteCompany, ForbiddenToProceed, InvitationNotFound, \
-    RequestNotFound
+    ForbiddenToDelete
 from app.core.security import get_password_hash, verify_password
 from app.db import models
 from app.db.database import async_session
-from app.schemas.action_schemas import InvitationRequest, AnswerResponse
-from app.schemas.company_schemas import CompanyCreate, CompanyUpdate, Company
-from app.schemas.quizz_schemas import CreateQuizz, UpdateQuizz
 from app.schemas.token_schemas import TokenPayload, UserAuth
 from app.schemas.user_schemas import UserSignupRequest, UserUpdateRequest, User
-from app.schemas.question_schemas import CreateQuestion, UserAnswers
 
 settings = JWTConfig()
 reuseable_oauth = OAuth2PasswordBearer(
