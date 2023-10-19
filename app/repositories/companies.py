@@ -10,6 +10,7 @@ from app.db.models import Company
 from app.schemas.company_schemas import CompanyCreate, CompanyUpdate
 from app.schemas.user_schemas import User
 from app.utils.repository import AbstractRepositoryCompany
+from app.repositories.users import UsersRepository
 
 
 class CompanyRepository(AbstractRepositoryCompany):
@@ -25,22 +26,17 @@ class CompanyRepository(AbstractRepositoryCompany):
     async def get_company_by_id(self, company_id: int, current_user: User):
         async with async_session() as session:
             result = await session.execute(select(self.model).filter(self.model.id == company_id).where(
-                or_(self.model.is_visible == True, self.model.owner == current_user.id)))
+                or_(self.model.is_visible, self.model.owner == current_user.id)))
 
             result = result.scalar()
             if not result:
                 raise NoSuchId
             return result
 
-    async def get_one_company(self, company_id: int, current_user: User):
-        async with async_session() as session:
-            result = await self.get_company_by_id(company_id, current_user)
-        return result
-
     async def get_all_companies(self, current_user: User, params: Params = Depends()):
         async with async_session() as session:
             result = await session.execute(
-                select(self.model).where(or_(self.model.is_visible == True, self.model.owner == current_user.id)))
+                select(self.model).where(or_(self.model.is_visible, self.model.owner == current_user.id)))
             result = result.scalars().all()
             return paginate(result, params)
 
@@ -74,10 +70,7 @@ class CompanyRepository(AbstractRepositoryCompany):
 
     async def update_company(self, company_id: int, model: CompanyUpdate, current_user: User):
         async with async_session() as session:
-            company = await session.execute(select(self.model).filter(self.model.id == company_id))
-            company = company.scalar()
-            if not company:
-                raise NoSuchId
+            company = await self.get_company_by_id(company_id, current_user)
             if company.owner != current_user.id:
                 raise ForbiddenToUpdateCompany
             for key, value in model.model_dump(exclude_unset=True).items():
@@ -87,16 +80,8 @@ class CompanyRepository(AbstractRepositoryCompany):
 
     async def make_admin(self, company_id: int, user_id: int, current_user: User):
         async with async_session() as session:
-            company = await session.execute(
-                select(models.Company).filter(models.Company.id == company_id, models.Company.owner == current_user.id))
-            company = company.scalar()
-            if not company:
-                raise ForbiddenToProceed
-            user = await session.execute(
-                select(models.User).filter(models.User.id == user_id))
-            user = user.scalar()
-            if not user:
-                raise NoSuchId
+            company = await self.get_company_by_id(company_id, current_user)
+            user = await UsersRepository().get_user_id(user_id)
             if user.id in company.member_ids:
                 company.admin_ids.append(user_id)
                 await session.commit()
@@ -105,32 +90,26 @@ class CompanyRepository(AbstractRepositoryCompany):
                 raise HTTPException(status_code=400, detail="User is not a member of the company")
 
     async def get_all_admins(self, company_id: int, current_user: User):
-        async with async_session() as session:
-            company = await session.execute(
-                select(models.Company).filter(self.model.id == company_id, self.model.owner == current_user.id))
-            company = company.scalar()
-            if not company:
-                raise ForbiddenToProceed
-            admins = company.admin_ids
-            return {'Admins': admins}
+        company = await self.get_company_by_id(company_id, current_user)
+        admins = company.admin_ids
+        return {'Admins': admins}
 
     async def remove_admin(self, company_id: int, user_id: int, current_user: User):
         async with async_session() as session:
-            company = await session.execute(
-                select(models.Company).filter(self.model.id == company_id, self.model.owner == current_user.id))
-            company = company.scalar()
-            if not company:
-                raise ForbiddenToProceed
-            user = await session.execute(
-                select(models.User).filter(models.User.id == user_id))
-            user = user.scalar()
-            if not user:
-                raise NoSuchId
+            company = await self.get_company_by_id(company_id, current_user)
+            user = await UsersRepository().get_user_id(user_id)
             if user.id in company.admin_ids:
                 company.admin_ids.remove(user.id)
                 await session.commit()
                 return {"message": "Administrator removed"}
             raise HTTPException(status_code=404, detail="Administrator not found")
+
+    async def check_owner_admin(self, company_id: int, current_user: User):
+        company = await self.get_company_by_id(company_id, current_user)
+        if not company:
+            if current_user.id not in company.admin_ids:
+                raise ForbiddenToProceed
+
 
 class CompanyRepos(CompanyRepository):
     model = Company

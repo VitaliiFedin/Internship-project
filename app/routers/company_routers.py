@@ -16,7 +16,7 @@ async def get_all_companies(current_user: User = Depends(get_current_user_depend
 
 @company.get('/company/{company_id}', response_model=Company)
 async def get_company(company_id: int, current_user: User = Depends(get_current_user_dependency)):
-    return await CompanyRepos().get_one_company(company_id, current_user)
+    return await CompanyRepos().get_company_by_id(company_id, current_user)
 
 
 @company.delete('/company/{company_id}', response_model=Company)

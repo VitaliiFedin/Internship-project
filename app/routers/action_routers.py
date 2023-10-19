@@ -15,13 +15,13 @@ async def invite_user_to_company(company_id: int, invitation: InvitationRequest,
 
 
 @action.get('/user/all_invitations')
-async def get_all_invitations(current_user: User = Depends(get_current_user_dependency)):
-    return await ActionRepos().all_invitations(current_user)
+async def get_all_invitations(method='invite', current_user: User = Depends(get_current_user_dependency)):
+    return await ActionRepos().all_invitations(current_user, method)
 
 
 @action.get('/user/all_requests')
-async def get_all_requests(current_user: User = Depends(get_current_user_dependency)):
-    return await ActionRepos().all_requests(current_user)
+async def get_all_requests(method='request', current_user: User = Depends(get_current_user_dependency)):
+    return await ActionRepos().all_requests(current_user, method)
 
 
 @action.delete('/company/invitation/{company_id}')
@@ -30,9 +30,9 @@ async def delete_invitation(company_id: int, user_id: int, current_user: User = 
 
 
 @action.post('/user/invitation/answer')
-async def user_accept_invitation(company_id: int, answer: AnswerResponse,
+async def user_accept_invitation(company_id: int, answer: AnswerResponse, user_id:int,
                                  current_user: User = Depends(get_current_user_dependency)):
-    return await ActionRepos().accept_invitation(company_id, current_user, answer)
+    return await ActionRepos().accept_invitation(company_id, user_id,current_user, answer)
 
 
 @action.post('/user/request/send/{company_id}')
@@ -73,5 +73,5 @@ async def user_leave_company(company_id: int, current_user: User = Depends(get_c
 
 
 @action.get('/company/members/{company_id}', response_model=CompanyMembers)
-async def company_get_members(company_id: int, current_user:User=Depends(get_current_user_dependency)):
+async def company_get_members(company_id: int, current_user: User = Depends(get_current_user_dependency)):
     return await ActionRepos().get_all_members(company_id, current_user)
