@@ -5,7 +5,7 @@ from app.core.dependencies import get_current_user_dependency
 from app.repositories.companies import CompanyRepos
 from app.schemas.company_schemas import Company, CompanyCreate, CompanyUpdate
 from app.schemas.user_schemas import User
-
+from app.db.database import get_session
 company = APIRouter()
 
 
@@ -16,7 +16,7 @@ async def get_all_companies(current_user: User = Depends(get_current_user_depend
 
 @company.get('/company/{company_id}', response_model=Company)
 async def get_company(company_id: int, current_user: User = Depends(get_current_user_dependency)):
-    return await CompanyRepos().get_company_by_id(company_id, current_user)
+    return await CompanyRepos().get_company(company_id, current_user)
 
 
 @company.delete('/company/{company_id}', response_model=Company)

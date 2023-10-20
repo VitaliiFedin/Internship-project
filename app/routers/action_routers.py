@@ -1,3 +1,5 @@
+from typing import List
+
 from fastapi import APIRouter, Depends
 from fastapi_pagination import Page, Params
 from app.schemas.action_schemas import InvitationRequest, AnswerResponse, CompanyMembers
@@ -9,19 +11,19 @@ action = APIRouter()
 
 
 @action.post('/company/action/{company_id}/invite')
-async def invite_user_to_company(company_id: int, invitation: InvitationRequest,
+async def invite_user_to_company(company_id: int, user_id: int,
                                  curren_user: User = Depends(get_current_user_dependency)):
-    return await ActionRepos().invite_user(company_id, invitation, curren_user)
+    return await ActionRepos().invite_user(company_id, user_id, curren_user)
 
 
 @action.get('/user/all_invitations')
-async def get_all_invitations(method='invite', current_user: User = Depends(get_current_user_dependency)):
-    return await ActionRepos().all_invitations(current_user, method)
+async def get_all_invitations(current_user: User = Depends(get_current_user_dependency)):
+    return await ActionRepos().all_invitations(current_user)
 
 
 @action.get('/user/all_requests')
-async def get_all_requests(method='request', current_user: User = Depends(get_current_user_dependency)):
-    return await ActionRepos().all_requests(current_user, method)
+async def get_all_requests(current_user: User = Depends(get_current_user_dependency)):
+    return await ActionRepos().all_requests(current_user)
 
 
 @action.delete('/company/invitation/{company_id}')
@@ -30,9 +32,9 @@ async def delete_invitation(company_id: int, user_id: int, current_user: User = 
 
 
 @action.post('/user/invitation/answer')
-async def user_accept_invitation(company_id: int, answer: AnswerResponse, user_id:int,
+async def user_accept_invitation(company_id: int, answer: AnswerResponse, user_id: int,
                                  current_user: User = Depends(get_current_user_dependency)):
-    return await ActionRepos().accept_invitation(company_id, user_id,current_user, answer)
+    return await ActionRepos().accept_invitation(company_id, user_id, current_user, answer)
 
 
 @action.post('/user/request/send/{company_id}')

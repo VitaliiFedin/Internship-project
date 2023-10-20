@@ -35,9 +35,10 @@ class ResultRepository(AbstractResult):
             await self.get_result(user_id)
 
     async def get_user_rating_company(self, user_id: int, company_id: int, current_user: User):
-        company = await CompanyRepos().get_company_by_id(company_id, current_user)
-        if user_id not in company.member_ids:
-            await CompanyRepos().check_owner_admin(company_id, current_user)
-            raise HTTPException(status_code=403, detail="You are not in company")
+        async with async_session() as session:
+            company = await CompanyRepos().get_company_by_id(session, company_id, current_user)
+            if user_id not in company.member_ids:
+                await CompanyRepos().check_owner_admin(company_id, current_user)
+                raise HTTPException(status_code=403, detail="You are not in company")
 
-        await self.get_result(user_id)
+            await self.get_result(user_id)

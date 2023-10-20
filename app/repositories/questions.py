@@ -38,7 +38,7 @@ class QuestionRepository(AbstractQuestion):
     async def get_questions(self, company_id: int, quiz_id: int, current_user: User):
         async with async_session() as session:
             await QuizzRepo().get_quiz(quiz_id)
-            company = await CompanyRepos().get_company_by_id(company_id, current_user)
+            company = await CompanyRepos().get_company_by_id(session,company_id, current_user)
             if not company:
                 if current_user.id not in company.member_ids or company.owner != current_user.id:
                     raise HTTPException(status_code=403, detail="You are not in this company")
@@ -48,7 +48,7 @@ class QuestionRepository(AbstractQuestion):
     async def attempt_questions(self, quiz_id: int, company_id: int, user_answer: UserAnswers, current_user: User):
         async with async_session() as session:
             await QuizzRepo().get_quiz(quiz_id)
-            company = await CompanyRepos().get_company_by_id(company_id, current_user)
+            company = await CompanyRepos().get_company_by_id(session,company_id, current_user)
             if current_user.id not in company.member_ids:
                 raise HTTPException(status_code=403, detail="You are not in company")
             questions = await self.get_questions_by_quiz_id(quiz_id)
