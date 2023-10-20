@@ -1,4 +1,6 @@
+import csv
 import json
+import os
 
 from fastapi import HTTPException
 from sqlalchemy import select
@@ -56,6 +58,31 @@ class RedisRepository(AbstractRepositoryRedis):
             return result_data
         else:
             raise HTTPException(status_code=404, detail="Result not found")
+
+    async def save_to_json(self, company_id: int, user_id: int, quiz_id: int):
+        result_data = await self.read_from_redis(company_id, user_id, quiz_id)
+        json_file_path = 'exported_files/data.json'
+        if not os.path.exists('exported_files'):
+            os.makedirs('exported_files')
+        if not result_data:
+            return {"Error": "no data"}
+            # Export to JSON
+        with open(json_file_path, 'w') as json_file:
+            json.dump(result_data, json_file)
+            return json_file
+
+    async def save_to_csv(self, company_id: int, user_id: int, quiz_id: int):
+        result_data = await self.read_from_redis(company_id, user_id, quiz_id)
+        csv_file_path = 'exported_files/data.csv'
+        questions_data = result_data.get('question_data', [])
+        if not questions_data:
+            return {"Redis": "Error"}
+        with open(csv_file_path, 'w', newline='') as csv_file:
+            csv_writer = csv.DictWriter(csv_file, fieldnames=questions_data[0].keys())
+            csv_writer.writeheader()
+            for data in questions_data:
+                csv_writer.writerow(data)
+        return {"Redis": "Success"}
 
 
 class RedisRepo(RedisRepository):
