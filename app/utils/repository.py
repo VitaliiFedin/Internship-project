@@ -396,3 +396,13 @@ class AbstractResult(ABC):
     @abstractmethod
     async def get_user_rating_company(self):
         raise NotImplementedError
+
+
+class AbstractRepositoryRedis(ABC):
+    @abstractmethod
+    async def save_to_redis(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    async def read_from_redis(self):
+        raise NotImplementedError
