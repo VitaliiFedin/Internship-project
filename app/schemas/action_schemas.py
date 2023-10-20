@@ -1,3 +1,5 @@
+from typing import Optional, List
+
 from pydantic import BaseModel
 
 
@@ -19,4 +21,4 @@ class AnswerResponse(BaseModel):
 
 
 class CompanyMembers(BaseModel):
-    member_ids: list
+    member_ids: Optional[list] = None

@@ -1,3 +1,5 @@
+from typing import List
+
 from fastapi import APIRouter, Depends
 from fastapi_pagination import Page, Params
 from app.schemas.action_schemas import InvitationRequest, AnswerResponse, CompanyMembers
@@ -9,9 +11,9 @@ action = APIRouter()
 
 
 @action.post('/company/action/{company_id}/invite')
-async def invite_user_to_company(company_id: int, invitation: InvitationRequest,
+async def invite_user_to_company(company_id: int, user_id: int,
                                  curren_user: User = Depends(get_current_user_dependency)):
-    return await ActionRepos().invite_user(company_id, invitation, curren_user)
+    return await ActionRepos().invite_user(company_id, user_id, curren_user)
 
 
 @action.get('/user/all_invitations')
@@ -30,9 +32,9 @@ async def delete_invitation(company_id: int, user_id: int, current_user: User = 
 
 
 @action.post('/user/invitation/answer')
-async def user_accept_invitation(company_id: int, answer: AnswerResponse,
+async def user_accept_invitation(company_id: int, answer: AnswerResponse, user_id: int,
                                  current_user: User = Depends(get_current_user_dependency)):
-    return await ActionRepos().accept_invitation(company_id, current_user, answer)
+    return await ActionRepos().accept_invitation(company_id, user_id, current_user, answer)
 
 
 @action.post('/user/request/send/{company_id}')
@@ -73,5 +75,5 @@ async def user_leave_company(company_id: int, current_user: User = Depends(get_c
 
 
 @action.get('/company/members/{company_id}', response_model=CompanyMembers)
-async def company_get_members(company_id: int, current_user:User=Depends(get_current_user_dependency)):
+async def company_get_members(company_id: int, current_user: User = Depends(get_current_user_dependency)):
     return await ActionRepos().get_all_members(company_id, current_user)
