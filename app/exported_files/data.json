@@ -1,0 +1,1 @@
+{"user_id": 2, "company_id": 1, "quiz_id": 1, "right_count": 0, "total_count": 1, "question_data": [{"text": "string", "answers": ["string"], "correct_answer": 0, "quiz_id": 1, "company_id": 1, "created_by": 1}]}

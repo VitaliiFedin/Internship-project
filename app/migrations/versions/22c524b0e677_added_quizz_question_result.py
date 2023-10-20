@@ -1,16 +1,10 @@
-<<<<<<<< HEAD:app/migrations/versions/22c524b0e677_added_quizz_question_result.py
 """Added quizz, question, result
 
 Revision ID: 22c524b0e677
 Revises: 50fc8eeacdc6
 Create Date: 2023-10-19 22:00:51.066401
 ========
-"""Created quiz
 
-Revision ID: 33777db2bb8a
-Revises: 449c426ee6b4
-Create Date: 2023-10-18 21:47:30.745130
->>>>>>>> 76bfa619de7b10bf11e9989293987a78284e4e8e:app/migrations/versions/33777db2bb8a_created_quiz.py
 
 """
 from typing import Sequence, Union
@@ -19,13 +13,13 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-<<<<<<<< HEAD:app/migrations/versions/22c524b0e677_added_quizz_question_result.py
+
 revision: str = '22c524b0e677'
 down_revision: Union[str, None] = '50fc8eeacdc6'
-========
+
 revision: str = '33777db2bb8a'
 down_revision: Union[str, None] = '449c426ee6b4'
->>>>>>>> 76bfa619de7b10bf11e9989293987a78284e4e8e:app/migrations/versions/33777db2bb8a_created_quiz.py
+
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

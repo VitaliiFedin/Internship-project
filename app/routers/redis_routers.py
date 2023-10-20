@@ -14,6 +14,11 @@ async def show_from_redis(company_id: int, user_id: int, quiz_id: int):
     return await RedisRepo().read_from_redis(company_id, user_id, quiz_id)
 
 
-@redis.get('/redis/{quiz_id:int}')
-async def save_to_file(company_id: int, user_id: int, quiz_id: int):
+@redis.get('/redis/{quiz_id:int}/json')
+async def save_to_file_json(company_id: int, user_id: int, quiz_id: int):
     return await RedisRepo().save_to_json(company_id, user_id, quiz_id)
+
+
+@redis.get('/redis/{quiz_id:int}/csv')
+async def save_to_file_csv(company_id: int, user_id: int, quiz_id: int):
+    return await RedisRepo().save_to_csv(company_id, user_id, quiz_id)
