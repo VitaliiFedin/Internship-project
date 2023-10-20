@@ -260,9 +260,6 @@ class JWTRepository(AbstractRepositoryJWT):
 
 
 class AbstractRepositoryCompany(ABC):
-    @abstractmethod
-    async def get_one_company(self):
-        raise NotImplementedError
 
     @abstractmethod
     async def get_all_companies(self):
@@ -299,6 +296,7 @@ class AbstractRepositoryCompany(ABC):
     @abstractmethod
     async def get_all_admins(self):
         raise NotImplementedError
+
 
 class AbstractRepositoryAction(ABC):
     @abstractmethod
@@ -372,11 +370,29 @@ class AbstractRepositoryQuizz(ABC):
         raise NotImplementedError
 
 
-class AbstractRepositoryRedis(ABC):
+class AbstractQuestion(ABC):
     @abstractmethod
-    async def save_to_redis(self):
+    async def create_questions(self):
         raise NotImplementedError
 
     @abstractmethod
-    async def read_from_redis(self):
+    async def get_questions(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    async def attempt_questions(self):
+        raise NotImplementedError
+
+
+class AbstractResult(ABC):
+    @abstractmethod
+    async def get_result(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    async def get_user_rating(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    async def get_user_rating_company(self):
         raise NotImplementedError
