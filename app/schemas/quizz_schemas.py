@@ -10,6 +10,7 @@ class CreateQuizz(BaseModel):
 
 
 class Quizz(BaseModel):
+    id: int
     name: str
     title: str
     description: str

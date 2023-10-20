@@ -1,5 +1,5 @@
 from fastapi import Depends
-from fastapi_pagination import paginate, Params
+from fastapi_pagination import Params, paginate
 from sqlalchemy import select
 
 from app.core.exception import NoSuchId
@@ -37,6 +37,14 @@ class QuizzRepository(AbstractRepositoryQuizz):
 
             return paginate(quizzes, params)
 
+    async def get_quiz(self, quizz_id: int):
+        async with async_session() as session:
+            quizz = await session.execute(select(self.model).filter(self.model.id == quizz_id))
+            quizz = quizz.scalar()
+            if not quizz:
+                raise NoSuchId
+            return quizz
+
     async def update_quizz(self, company_id: int, quizz_id: int, form: UpdateQuizz, current_user: User):
         async with async_session() as session:
             quizz = await self.get_quiz(quizz_id)
@@ -47,13 +55,6 @@ class QuizzRepository(AbstractRepositoryQuizz):
             await session.commit()
             return quizz
 
-    async def get_quiz(self, quizz_id: int):
-        async with async_session() as session:
-            quizz = await session.execute(select(self.model).filter(self.model.id == quizz_id))
-            quizz = quizz.scalar()
-            if not quizz:
-                raise NoSuchId
-            return quizz
 
     async def delete_quizz(self, company_id: int, quizz_id: int, current_user: User):
         async with async_session() as session:

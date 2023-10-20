@@ -67,7 +67,7 @@ class Question(Model):
     id = Column(Integer, primary_key=True, index=True)
     text = Column(String)
     answers = Column(MutableList.as_mutable(ARRAY(String)), server_default="{}")
-    correct_answer = Column(String)
+    correct_answer = Column(Integer)
     quiz_id = Column(Integer, ForeignKey('quizzes.id'))
     company_id = Column(Integer, ForeignKey('companies.id'))
     created_by = Column(Integer, ForeignKey('users.id'))
